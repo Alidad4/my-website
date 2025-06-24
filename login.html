@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>تسجيل الدخول - مركز الرنين</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #2980b9;
+    margin: 0; padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+  }
+  form {
+    background: white;
+    padding: 30px 35px;
+    border-radius: 12px;
+    color: #34495e;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    width: 320px;
+  }
+  h2 {
+    margin: 0 0 20px 0;
+    font-weight: 700;
+    text-align: center;
+  }
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #2980b9;
+    outline: none;
+  }
+  button {
+    width: 100%;
+    padding: 12px 0;
+    background: #2980b9;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #1f5f8b;
+  }
+  .error {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    font-weight: 600;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<form id="login-form">
+  <h2>تسجيل الدخول</h2>
+  <div class="error" id="error-msg"></div>
+  <input type="text" id="username" placeholder="اسم المستخدم" required autocomplete="off" />
+  <input type="password" id="password" placeholder="كلمة المرور" required autocomplete="off" />
+  <button type="submit">دخول</button>
+</form>
+
+<script>
+  const loginForm = document.getElementById('login-form');
+  const errorMsg = document.getElementById('error-msg');
+
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+
+    if (user === 'AfTaR' && pass === 'Ali_Dad3030') {
+      localStorage.setItem('loggedIn', 'true');
+      window.location.href = 'dashboard.html';
+    } else {
+      errorMsg.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
+    }
+  });
+</script>
+
+</body>
+</html>

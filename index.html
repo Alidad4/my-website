@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>منتجات مركز الرنين</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      background: #f0f2f5;
+      color: #333;
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      color: #2980b9;
+    }
+
+    /* السلة مع عداد */
+    #cart-link {
+      position: relative;
+      text-decoration: none;
+      font-size: 1rem;
+      background: #27ae60;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 30px;
+      transition: background 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #cart-link:hover {
+      background: #1e8449;
+    }
+
+    #cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #e74c3c;
+      color: white;
+      font-size: 0.75rem;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 20px;
+      font-weight: bold;
+      user-select: none;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    @media (max-width: 900px) {
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      padding: 12px 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 160px;
+      transition: transform 0.2s;
+      position: relative;
+      overflow: visible;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .product-name {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .product-category {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      margin-bottom: 6px;
+    }
+
+    .product-price {
+      font-weight: bold;
+      color: #27ae60;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .product-card button {
+      background: #2980b9;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: background 0.3s;
+      align-self: flex-start;
+      position: relative;
+      z-index: 1;
+    }
+
+    .product-card button:hover {
+      background: #1f5f8b;
+    }
+
+    /* الانميشن */
+    .fly-to-cart {
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      background: #2980b9;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1000;
+      transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.8s;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📦 منتجات مركز الرنين</h1>
+    <a href="cart.html" id="cart-link" title="السلة">
+      🛒 السلة
+      <span id="cart-count">0</span>
+    </a>
+  </header>
+
+  <div class="product-grid" id="product-list"></div>
+
+  <script>
+    // جلب المنتجات من التخزين المحلي
+    const products = JSON.parse(localStorage.getItem('products')) || [];
+
+    const productList = document.getElementById('product-list');
+    const cartCount = document.getElementById('cart-count');
+    const cartLink = document.getElementById('cart-link');
+
+    // تحميل عدد المنتجات في السلة عند بدء الصفحة
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    updateCartCount();
+
+    products.forEach(product => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <div class="product-name">${product.name}</div>
+        <div class="product-category">الصنف: ${product.category}</div>
+        <div class="product-price">${product.price} د.ع</div>
+        <button>➕ إضافة</button>
+      `;
+      productList.appendChild(card);
+
+      // ربط الزر بالوظيفة
+      const btn = card.querySelector('button');
+      btn.addEventListener('click', (e) => {
+        addToCart(product.name, product.price, e.target);
+      });
+    });
+
+    function updateCartCount() {
+      let totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+      cartCount.textContent = totalQuantity;
+      cartCount.style.display = totalQuantity > 0 ? 'inline-block' : 'none';
+    }
+
+    function addToCart(name, price, button) {
+      // إضافة المنتج للسلة
+      const index = cart.findIndex(item => item.name === name);
+      if (index > -1) {
+        cart[index].quantity += 1;
+      } else {
+        cart.push({ name, price, quantity: 1 });
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartCount();
+
+      // انشاء العنصر المتحرك (دائرة صغيرة)
+      const flyElem = document.createElement('div');
+      flyElem.classList.add('fly-to-cart');
+      document.body.appendChild(flyElem);
+
+      // تحديد موقع البداية (زر الإضافة)
+      const btnRect = button.getBoundingClientRect();
+      flyElem.style.left = btnRect.left + btnRect.width / 2 - 20 + 'px'; // 20 = نصف عرض العنصر المتحرك
+      flyElem.style.top = btnRect.top + btnRect.height / 2 - 20 + 'px';
+
+      // موقع السلة (هدف الحركة)
+      const cartRect = cartLink.getBoundingClientRect();
+
+      // تحريك العنصر إلى السلة
+      requestAnimationFrame(() => {
+        flyElem.style.transform = `translate(${cartRect.left - btnRect.left}px, ${cartRect.top - btnRect.top}px) scale(0.1)`;
+        flyElem.style.opacity = '0';
+      });
+
+      // حذف العنصر بعد الانتهاء من الانميشن
+      flyElem.addEventListener('transitionend', () => {
+        flyElem.remove();
+      });
+    }
+  </script>
+
+</body>
+</html>

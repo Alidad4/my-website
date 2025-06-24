@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>لوحة التحكم - مركز الرنين</title>
+<style>
+  /* تصميم بسيط وأنيق */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #eef2f7;
+    margin: 20px;
+    color: #2c3e50;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2980b9;
+  }
+  form {
+    margin-bottom: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  input[type="text"], input[type="number"], select {
+    padding: 12px 15px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    flex: 1 1 200px;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus, select:focus, input[type="number"]:focus {
+    border-color: #2980b9;
+    outline: none;
+  }
+  button {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    flex: 0 0 auto;
+  }
+  button:hover {
+    background: #1e8449;
+  }
+  .list-container {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+  }
+  .category-list, .product-list {
+    flex: 1 1 45%;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #ecf0f1;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+  }
+  .category-list h2, .product-list h2 {
+    margin-top: 0;
+    color: #34495e;
+    font-weight: 600;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #2c3e50;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  }
+  .delete-btn {
+    background: #e74c3c;
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.3s ease;
+  }
+  .delete-btn:hover {
+    background: #c0392b;
+  }
+</style>
+</head>
+<body>
+
+<h1>لوحة التحكم - مركز الرنين</h1>
+
+<form id="category-form">
+  <input type="text" id="category-name" placeholder="اسم الصنف الجديد" required autocomplete="off" />
+  <button type="submit">إضافة صنف</button>
+</form>
+
+<form id="product-form">
+  <input type="text" id="product-name" placeholder="اسم المنتج" required autocomplete="off" />
+  <select id="product-category" required>
+    <option value="" disabled selected>اختر الصنف</option>
+  </select>
+  <input type="number" id="product-price" placeholder="السعر (د.ع)" min="0" required />
+  <button type="submit">إضافة منتج</button>
+</form>
+
+<div class="list-container">
+  <div class="category-list">
+    <h2>الأصناف</h2>
+    <ul id="categories-ul"></ul>
+  </div>
+  <div class="product-list">
+    <h2>المنتجات</h2>
+    <ul id="products-ul"></ul>
+  </div>
+</div>
+
+<script>
+  let categories = JSON.parse(localStorage.getItem('categories')) || [];
+  let products = JSON.parse(localStorage.getItem('products')) || [];
+
+  const categoryForm = document.getElementById('category-form');
+  const productForm = document.getElementById('product-form');
+  const categoryNameInput = document.getElementById('category-name');
+  const productNameInput = document.getElementById('product-name');
+  const productCategorySelect = document.getElementById('product-category');
+  const productPriceInput = document.getElementById('product-price');
+  const categoriesUl = document.getElementById('categories-ul');
+  const productsUl = document.getElementById('products-ul');
+
+  function saveData() {
+    localStorage.setItem('categories', JSON.stringify(categories));
+    localStorage.setItem('products', JSON.stringify(products));
+  }
+
+  function renderCategories() {
+    categoriesUl.innerHTML = '';
+    productCategorySelect.innerHTML = '<option value="" disabled selected>اختر الصنف</option>';
+    categories.forEach((cat, idx) => {
+      const li = document.createElement('li');
+      li.textContent = cat;
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'حذف';
+      delBtn.classList.add('delete-btn');
+      delBtn.onclick = () => {
+        // حذف الصنف والمنتجات التابعة له
+        categories.splice(idx, 1);
+        products = products.filter(p => p.category !== cat);
+        saveData();
+        renderCategories();
+        renderProducts();
+      };
+      li.appendChild(delBtn);
+      categoriesUl.appendChild(li);
+
+      const option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      productCategorySelect.appendChild(option);
+    });
+  }
+
+  function renderProducts() {
+    productsUl.innerHTML = '';
+    products.forEach((prod, idx) => {
+      const li = document.createElement('li');
+      li.textContent = `${prod.name} - ${prod.category} - ${prod.price} د.ع`;
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'حذف';
+      delBtn.classList.add('delete-btn');
+      delBtn.onclick = () => {
+        products.splice(idx, 1);
+        saveData();
+        renderProducts();
+      };
+      li.appendChild(delBtn);
+      productsUl.appendChild(li);
+    });
+  }
+
+  categoryForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const newCat = categoryNameInput.value.trim();
+    if (newCat && !categories.includes(newCat)) {
+      categories.push(newCat);
+      saveData();
+      renderCategories();
+      categoryNameInput.value = '';
+    }
+  });
+
+  productForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const newName = productNameInput.value.trim();
+    const newCat = productCategorySelect.value;
+    const newPrice = parseFloat(productPriceInput.value);
+    if (newName && newCat && !isNaN(newPrice)) {
+      products.push({name: newName, category: newCat, price: newPrice});
+      saveData();
+      renderProducts();
+      productNameInput.value = '';
+      productCategorySelect.value = '';
+      productPriceInput.value = '';
+    }
+  });
+
+  renderCategories();
+  renderProducts();
+</script>
+
+</body>
+</html>
